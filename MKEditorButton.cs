@@ -22,19 +22,21 @@ namespace Minikit
             base.OnInspectorGUI();
 
             MonoBehaviour monoBehaviour = target as MonoBehaviour;
-
-            IEnumerable<MemberInfo> methods = monoBehaviour.GetType()
-                .GetMembers(BindingFlags.Instance | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
-                .Where(mi => Attribute.IsDefined(mi, typeof(MKEditorButtonAttribute)));
-
-            foreach (MemberInfo memberInfo in methods)
+            if (monoBehaviour != null)
             {
-                if (GUILayout.Button(memberInfo.Name))
+                IEnumerable<MemberInfo> methods = monoBehaviour.GetType()
+                    .GetMembers(BindingFlags.Instance | BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                    .Where(mi => System.Attribute.IsDefined(mi, typeof(MKEditorButtonAttribute)));
+
+                foreach (MemberInfo memberInfo in methods)
                 {
-                    MethodInfo method = memberInfo as MethodInfo;
-                    if (method != null)
+                    if (GUILayout.Button(memberInfo.Name))
                     {
-                        method.Invoke(monoBehaviour, null);
+                        MethodInfo method = memberInfo as MethodInfo;
+                        if (method != null)
+                        {
+                            method.Invoke(monoBehaviour, null);
+                        }
                     }
                 }
             }
