@@ -1,13 +1,11 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 
 namespace Minikit
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class MKNativeTagAttribute : Attribute
+    public class MKNativeTagAttribute : System.Attribute
     {
     }
 } // Minikit namespace
