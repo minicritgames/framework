@@ -109,7 +109,7 @@ namespace Minikit
             return new MKTimerHandle_Coroutine(StartCoroutine(DoCoroutineTimer(_delay, _action)), _action);
         }
 
-        IEnumerator DoCoroutineTimer(float _delay, Action _action)
+        private IEnumerator DoCoroutineTimer(float _delay, Action _action)
         {
             yield return new WaitForSeconds(_delay);
 
@@ -126,7 +126,7 @@ namespace Minikit
             return new MKTimerHandle_Coroutine(StartCoroutine(DoCoroutineTimer_Frames(_frames, _action)), _action);
         }
 
-        IEnumerator DoCoroutineTimer_Frames(int _frames, Action _action)
+        private IEnumerator DoCoroutineTimer_Frames(int _frames, Action _action)
         {
             if (_frames > 0)
             {
