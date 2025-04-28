@@ -62,22 +62,30 @@ namespace Minikit
 
     public class MKTimerManager : MonoBehaviour
     {
-        private List<MKTimerHandle_Tick> timerHandles = new();
-        public static MKTimerManager instance { get; private set; }
+        protected List<MKTimerHandle_Tick> timerHandles = new();
 
-        
-        private void Awake()
+        protected static MKTimerManager __instance;
+        public static MKTimerManager instance
         {
-            if (instance != null)
+            get
             {
-                MonoBehaviour.Destroy(this.gameObject);
-                return;
+                if (__instance == null)
+                {
+                    GameObject timerManagerGO = new GameObject("TimerManager");
+                    __instance = timerManagerGO.AddComponent<MKTimerManager>();
+                }
+                
+                return __instance;
             }
-            instance = this;
-            DontDestroyOnLoad(this.gameObject);
         }
 
-        private void Update()
+        
+        protected virtual void Awake()
+        {
+            DontDestroyOnLoad(gameObject);
+        }
+
+        protected virtual void Update()
         {
             foreach (MKTimerHandle_Tick timerHandle in timerHandles.ToArray())
             {
