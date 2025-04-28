@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 using UnityEngine.Events;
 
 namespace Minikit
@@ -15,23 +13,16 @@ namespace Minikit
 
         public MKBucket()
         {
-
         }
 
 
-        /// <summary> Attempts to add an entry to the bucket. Returns false if the bucket already has the given key </summary>
+        /// <summary> Attempts to add an entry to the bucket. Returns false if the bucket already has the given key. </summary>
         public virtual bool Add(TKey _key, TValue _value)
         {
-            if (!bucketEntriesByKey.ContainsKey(_key))
-            {
-                bucketEntriesByKey.Add(_key, _value);
-                return true;
-            }
-
-            return false;
+            return bucketEntriesByKey.TryAdd(_key, _value);
         }
 
-        /// <summary> Attempts to remove an entry from the bucket by key. Returns false if the bucket doesn't have the given key </summary>
+        /// <summary> Attempts to remove an entry from the bucket by key. Returns false if the bucket doesn't have the given key. </summary>
         public virtual bool Remove(TKey _key)
         {
             if (bucketEntriesByKey.ContainsKey(_key))
@@ -50,8 +41,6 @@ namespace Minikit
 
     public class MKTruthBucket<TKey> : MKBucket<TKey, bool>
     {
-
-
         public virtual bool AnyTruth()
         {
             return bucketEntriesByKey.Values.FirstOrDefault(b => b);
@@ -152,7 +141,7 @@ namespace Minikit
         }
     }
 
-    /// <summary> Does not allow entries with duplicate priorities due to the nature of SortedList </summary>
+    /// <summary> Does not allow entries with duplicate priorities due to the nature of SortedList. </summary>
     /// <typeparam name="TPriority"> The type to use as the priority comparer - int is allowed </typeparam>
     public class MKPriorityBucket<TKey, TValue, TPriority>
     {
@@ -172,7 +161,7 @@ namespace Minikit
         }
 
 
-        /// <summary> Attempts to add an entry to the bucket. Returns false if the bucket already has the given key </summary>
+        /// <summary> Attempts to add an entry to the bucket. Returns false if the bucket already has the given key. </summary>
         public virtual bool Add(TKey _key, TValue _value, TPriority _priority)
         {
             foreach (KeyValuePair<TPriority, KeyValuePair<TKey, TValue>> pair in sortedList.ToArray())
@@ -209,7 +198,7 @@ namespace Minikit
             return true;
         }
 
-        /// <summary> Attempts to remove an entry from the bucket by key. Returns false if the bucket doesn't have the given key </summary>
+        /// <summary> Attempts to remove an entry from the bucket by key. Returns false if the bucket doesn't have the given key. </summary>
         public virtual bool Remove(TKey _key)
         {
             foreach (KeyValuePair<TPriority, KeyValuePair<TKey, TValue>> pair in sortedList.ToArray())
@@ -242,14 +231,14 @@ namespace Minikit
         {
             TKey cachedLastHighestPriorityKey = lastHighestPriorityKey;
             lastHighestPriorityKey = sortedList.Count > 0 ? sortedList.ElementAt(sortedList.Count - 1).Value.Key : default(TKey);
-            if (!lastHighestPriorityKey.Equals(cachedLastHighestPriorityKey))
+            if (lastHighestPriorityKey != null && !lastHighestPriorityKey.Equals(cachedLastHighestPriorityKey))
             {
                 OnHighestPriorityKeyChanged.Invoke(lastHighestPriorityKey);
             }
 
             TValue cachedLastHighestPriorityValue = lastHighestPriorityValue;
             lastHighestPriorityValue = sortedList.Count > 0 ? sortedList.ElementAt(sortedList.Count - 1).Value.Value : default(TValue);
-            if (!lastHighestPriorityValue.Equals(cachedLastHighestPriorityValue))
+            if (lastHighestPriorityValue != null && !lastHighestPriorityValue.Equals(cachedLastHighestPriorityValue))
             {
                 OnHighestPriorityValueChanged.Invoke(lastHighestPriorityValue);
             }

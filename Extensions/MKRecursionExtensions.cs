@@ -1,13 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Minikit
 {
     public static class MKRecursionExtensions
     {
-
-
         public static void SetLayerRecursive(this GameObject _gameObject, int _layer, bool _recursivelyOnAllChildren = false)
         {
             _gameObject.layer = _layer;
@@ -16,7 +12,7 @@ namespace Minikit
             {
                 foreach (Transform child in _gameObject.transform)
                 {
-                    child.gameObject.SetLayerRecursive(_layer, _recursivelyOnAllChildren);
+                    child.gameObject.SetLayerRecursive(_layer, true);
                 }
             }
         }

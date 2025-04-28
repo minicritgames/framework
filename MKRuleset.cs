@@ -12,18 +12,18 @@ namespace Minikit
     public class MKRuleset<T>
     {
         public delegate bool MKRule(T _generic);
-
-
+        
         private List<MKRule> rules = new();
 
 
         public MKRuleset()
         {
-
         }
 
-
-        /// <summary> Checks if all of the rules passed </summary>
+        
+        /// <summary>
+        /// Checks if all the rules passed
+        /// </summary>
         public bool Check(T _generic)
         {
             foreach (MKRule rule in rules)

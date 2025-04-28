@@ -1,11 +1,8 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public static class MKGeometryExtensions
 {
-
-
     public static List<Vector3> FibonacciSphere(int _n)
     {
         List<Vector3> list = new List<Vector3>();

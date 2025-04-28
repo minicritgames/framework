@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,8 +5,6 @@ namespace Minikit
 {
     public static class MKListExtensions
     {
-
-
         /// <summary> Shuffles the element order of the specified list. </summary>
         public static void Shuffle<T>(this IList<T> ts)
         {
@@ -15,10 +12,8 @@ namespace Minikit
             var last = count - 1;
             for (var i = 0; i < last; ++i)
             {
-                var r = UnityEngine.Random.Range(i, count);
-                var tmp = ts[i];
-                ts[i] = ts[r];
-                ts[r] = tmp;
+                var r = Random.Range(i, count);
+                (ts[i], ts[r]) = (ts[r], ts[i]); // Swap via deconstruction
             }
         }
     }

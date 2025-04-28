@@ -1,15 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 
 namespace Minikit
 {
-    /// <summary> Helper class with additional functions that aren't included in Unity's Gizmos class </summary>
+    /// <summary> Helper class with additional functions that aren't included in Unity's Gizmos class. </summary>
     public static class MKGizmos
     {
-
-
         public static void DrawArrow(Vector3 _position, Vector3 _direction, float _arrowHeadLength = 0.25f, float _arrowHeadAngle = 20.0f)
         {
             Gizmos.DrawRay(_position, _direction);
@@ -19,15 +14,5 @@ namespace Minikit
             Gizmos.DrawRay(_position + _direction, right * _arrowHeadLength);
             Gizmos.DrawRay(_position + _direction, left * _arrowHeadLength);
         }
-
-#if UNITY_EDITOR
-        /// <remarks> WARNING! Only usable within #if UNITY_EDITOR </remarks>
-        public static void DrawText(Vector3 _position, string _text)
-        {
-            // Untested
-            Handles.color = Gizmos.color;
-            Handles.Label(_position, _text);
-        }
-#endif // UNITY_EDITOR
     }
 } // Minikit namespace

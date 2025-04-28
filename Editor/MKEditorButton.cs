@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
-namespace Minikit
+namespace Minikit.Editor
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class MKEditorButtonAttribute : PropertyAttribute
@@ -13,10 +13,8 @@ namespace Minikit
     }
 
     [CustomEditor(typeof(MonoBehaviour), true)]
-    public class MKEditorButton : Editor
+    public class MKEditorButton : UnityEditor.Editor
     {
-
-
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
@@ -42,4 +40,4 @@ namespace Minikit
             }
         }
     }
-} // Minikit namespace
+} // Minikit.Editor namespace

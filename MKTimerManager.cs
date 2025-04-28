@@ -47,6 +47,7 @@ namespace Minikit
             action = _action;
         }
 
+        
         public void Cancel()
         {
             MKTimerManager.instance.StopCoroutine(coroutine);
@@ -62,10 +63,9 @@ namespace Minikit
     public class MKTimerManager : MonoBehaviour
     {
         private List<MKTimerHandle_Tick> timerHandles = new();
-
-
         public static MKTimerManager instance { get; private set; }
 
+        
         private void Awake()
         {
             if (instance != null)

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Minikit
 {
-    /// <summary> Helper class with additional functions that aren't included in Unity's Debug class </summary>
+    /// <summary> Helper class with additional functions that aren't included in Unity's Debug class. </summary>
     public static class MKDebug
     {
         // Sphere with radius of 1
