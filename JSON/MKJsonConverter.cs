@@ -9,10 +9,14 @@ using UnityEngine;
 namespace Minikit
 {
     /// <summary> The base class for all converters that should be bundled together for use via the JsonConverterReflector </summary>
-    public abstract class MKJsonConverter : JsonConverter 
+    public abstract class MKJsonConverter : JsonConverter
     {
     }
 
+    public class MKJsonConverterNonGlobalAttribute : Attribute
+    {
+    }
+    
     public static class MKJsonConverterReflector
     {
         private static readonly List<MKJsonConverter> converterInstances = new();
@@ -28,6 +32,7 @@ namespace Minikit
                 foreach (Type type in assembly.GetTypes())
                 {
                     if (type.IsSubclassOf(typeof(MKJsonConverter))
+                        && type.GetCustomAttribute<MKJsonConverterNonGlobalAttribute>() == null // Don't include converters that are marked as non-global
                         && !type.IsAbstract) // Ignore abstract classes since we don't want to register them
                     {
                         converterInstances.Add(Activator.CreateInstance(type) as MKJsonConverter);

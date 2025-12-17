@@ -11,7 +11,8 @@ namespace Minikit
         {
             Formatting = Formatting.Indented,
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            Converters = MKJsonConverterReflector.converters
+            Converters = MKJsonConverterReflector.converters,
+            ContractResolver = MKJsonContractResolver_ScriptableObjectProperties.instance
         };
 
 

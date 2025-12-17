@@ -6,7 +6,7 @@ namespace Minikit
 {
     public static class MKAssetDatabase
     {
-        public static List<T> FindAllScriptableObjects<T>() where T : ScriptableObject
+        public static List<T> FindAllAssets<T>() where T : Object
         {
             string[] guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
 
@@ -22,6 +22,11 @@ namespace Minikit
             }
 
             return assets;
+        }
+        
+        public static List<T> FindAllScriptableObjects<T>() where T : ScriptableObject
+        {
+            return FindAllAssets<T>();
         }
     }
 } // Minikit namespace
