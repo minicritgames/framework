@@ -1,19 +1,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using UnityEditor;
 using UnityEngine;
 
 namespace Minikit
 {
-    [System.Serializable]
+    [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     public class MKTag : IEquatable<MKTag>
     {
         /// <summary> WARNING! This is not intended to be changed during runtime. It is marked public for Unity serialization purposes </summary>
-        public string key;
+        [JsonProperty] public string key;
 
-        private static Dictionary<string, MKTag> tags = new();
-        [NonSerialized] public static MKTag Invalid = MKTag.Get("");
+        [JsonIgnore] private static Dictionary<string, MKTag> tags = new();
+        [NonSerialized] [JsonIgnore] public static MKTag Invalid = Get("");
 
 
         private MKTag(string _key)
