@@ -6,10 +6,11 @@ namespace Minikit
 {
     public static class MKAssetDatabase
     {
-        public static List<T> FindAllAssets<T>() where T : Object
+        public static List<T> FindAllAssets<T>(string _sourceFolder = "") where T : Object
         {
-            string[] guids = AssetDatabase.FindAssets($"t:{typeof(T).Name}");
+            string[] guids = FindAllAssetGUIDs<T>(_sourceFolder);
 
+            // Load all the assets
             List<T> assets = new();
             foreach (string guid in guids)
             {
@@ -23,10 +24,15 @@ namespace Minikit
 
             return assets;
         }
+
+        public static string[] FindAllAssetGUIDs<T>(string _sourceFolder = "") where T : Object
+        {
+            return AssetDatabase.FindAssets($"t:{typeof(T).Name}", new [] { _sourceFolder });
+        }
         
         public static List<T> FindAllScriptableObjects<T>() where T : ScriptableObject
         {
-            return FindAllAssets<T>();
+            return FindAllAssets<T>($"Assets/{BRProject.projectFolderName}/ScriptableObjects");
         }
     }
 } // Minikit namespace
