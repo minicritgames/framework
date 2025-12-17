@@ -1,8 +1,6 @@
 using System;
 using System.IO;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using UnityEditor;
 using UnityEngine;
 
 namespace Minikit
@@ -12,25 +10,25 @@ namespace Minikit
     {
         public override void WriteJson(JsonWriter _writer, object _value, JsonSerializer _serializer)
         {
+#if UNITY_EDITOR
             if (_value is not ScriptableObject so)
             {
                 _writer.WriteNull();
                 return;
             }
 
-            string assetPath = AssetDatabase.GetAssetPath(so);
-            string sourceBase = $"Assets/{BRProject.projectFolderName}/ScriptableObjects/";
-            if (!assetPath.StartsWith(sourceBase))
+            if (MKStreamingAssets.GetStreamingAssetsRelativePath(so, "ScriptableObjects/", "Data/", false) is not string path)
             {
-                Debug.LogError($"ScriptableObject not under expected root folder: {sourceBase}\nScriptableObject was under: {assetPath}");
                 _writer.WriteNull();
                 return;
             }
-            
-            string relativePath = assetPath.Substring(sourceBase.Length);
-            string streamingAssetPath = Path.ChangeExtension(relativePath, ".json");
-            
-            _writer.WriteValue(streamingAssetPath);
+            path = Path.ChangeExtension(path, ".json");
+
+            _writer.WriteValue(path);
+#else
+            _writer.WriteNull();
+            return;
+#endif // UNITY_EDITOR
         }
 
         public override object ReadJson(JsonReader _reader, Type _objectType, object _existingValue, JsonSerializer _serializer)

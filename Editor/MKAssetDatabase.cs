@@ -30,9 +30,14 @@ namespace Minikit
             return AssetDatabase.FindAssets($"t:{typeof(T).Name}", new [] { _sourceFolder });
         }
         
-        public static List<T> FindAllScriptableObjects<T>() where T : ScriptableObject
+        public static List<T> FindAllScriptableObjects<T>(string _sourceFolder = "") where T : ScriptableObject
         {
-            return FindAllAssets<T>($"Assets/{BRProject.projectFolderName}/ScriptableObjects");
+            return FindAllAssets<T>(_sourceFolder);
+        }
+
+        public static void RefreshAssetDatabase()
+        {
+            AssetDatabase.Refresh();
         }
     }
 } // Minikit namespace
