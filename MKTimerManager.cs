@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Minikit
 {
@@ -62,6 +63,8 @@ namespace Minikit
 
     public class MKTimerManager : MonoBehaviour
     {
+        [HideInInspector] public UnityEvent OnUpdate = new();
+        
         protected List<MKTimerHandle_Tick> timerHandles = new();
 
         protected static MKTimerManager __instance;
@@ -69,9 +72,9 @@ namespace Minikit
         {
             get
             {
-                if (__instance == null)
+                if (!__instance)
                 {
-                    GameObject timerManagerGO = new GameObject("TimerManager");
+                    GameObject timerManagerGO = new("TimerManager");
                     __instance = timerManagerGO.AddComponent<MKTimerManager>();
                 }
                 
@@ -102,6 +105,8 @@ namespace Minikit
                     continue;
                 }
             }
+            
+            OnUpdate?.Invoke();
         }
 
 
