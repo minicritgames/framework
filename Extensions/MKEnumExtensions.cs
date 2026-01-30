@@ -9,14 +9,34 @@ namespace Minikit
         private static void CheckIsEnum<T>()
         {
             if (!typeof(T).IsEnum)
-                throw new ArgumentException(string.Format("Type '{0}' is not an enum", typeof(T).FullName));
-            if (!System.Attribute.IsDefined(typeof(T), typeof(FlagsAttribute)))
-                throw new ArgumentException(string.Format("Type '{0}' doesn't have the 'Flags' attribute", typeof(T).FullName));
+            {
+                throw new ArgumentException($"Type '{typeof(T).FullName}' is not an enum");
+            }
+        }
+
+        private static void CheckIsFlagsEnum<T>()
+        {
+            CheckIsEnum<T>();
+
+            if (!IsFlagsEnum<T>())
+            {
+                throw new ArgumentException($"Type '{typeof(T).FullName}' doesn't have the 'Flags' attribute");
+            }
+        }
+        
+        public static bool IsFlagsEnum<T>()
+        {
+            return IsFlagsEnum(typeof(T));
+        }
+
+        public static bool IsFlagsEnum(this Type _type)
+        {
+            return Attribute.IsDefined(_type, typeof(FlagsAttribute));
         }
 
         public static bool IsFlagSet<T>(this T _value, T _flag) where T : struct
         {
-            CheckIsEnum<T>();
+            CheckIsFlagsEnum<T>();
             long lValue = Convert.ToInt64(_value);
             long lFlag = Convert.ToInt64(_flag);
             return (lValue & lFlag) != 0;
@@ -24,7 +44,7 @@ namespace Minikit
 
         public static IEnumerable<T> GetFlags<T>(this T _value) where T : struct
         {
-            CheckIsEnum<T>();
+            CheckIsFlagsEnum<T>();
             foreach (T flag in Enum.GetValues(typeof(T)).Cast<T>())
             {
                 if (_value.IsFlagSet(flag))
@@ -34,7 +54,7 @@ namespace Minikit
 
         public static T SetFlags<T>(this T _value, T _flags, bool _on) where T : struct
         {
-            CheckIsEnum<T>();
+            CheckIsFlagsEnum<T>();
             long lValue = Convert.ToInt64(_value);
             long lFlag = Convert.ToInt64(_flags);
             if (_on)
@@ -60,7 +80,7 @@ namespace Minikit
 
         public static T CombineFlags<T>(this IEnumerable<T> _flags) where T : struct
         {
-            CheckIsEnum<T>();
+            CheckIsFlagsEnum<T>();
             long lValue = 0;
             foreach (T flag in _flags)
             {
@@ -72,7 +92,7 @@ namespace Minikit
         
         public static bool HasAnyFlags<T>(this T _value, T _other)
         {
-            CheckIsEnum<T>();
+            CheckIsFlagsEnum<T>();
             return (Convert.ToInt32(_value) & Convert.ToInt32(_other)) != 0;
         }
     }
