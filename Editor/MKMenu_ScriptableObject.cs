@@ -46,4 +46,4 @@ namespace Minikit.Editor
             Selection.activeObject = cloneSO;
         }
     }
-}
+} // Minikit.Framework namespace
