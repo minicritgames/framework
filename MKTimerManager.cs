@@ -64,6 +64,8 @@ namespace Minikit
     public class MKTimerManager : MonoBehaviour
     {
         [HideInInspector] public UnityEvent OnUpdate = new();
+        [HideInInspector] public UnityEvent OnFixedUpdate = new();
+        [HideInInspector] public UnityEvent OnLateUpdate = new();
         
         protected List<MKTimerHandle_Tick> timerHandles = new();
 
@@ -109,6 +111,16 @@ namespace Minikit
             OnUpdate?.Invoke();
         }
 
+        protected virtual void FixedUpdate()
+        {
+            OnFixedUpdate?.Invoke();
+        }
+
+        protected virtual void LateUpdate()
+        {
+            OnLateUpdate?.Invoke();
+        }
+        
 
         public MKTimerHandle_Tick NewTimer_Tick(float _delay, Action _action)
         {
