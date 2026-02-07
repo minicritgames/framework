@@ -4,16 +4,13 @@ namespace Minikit
 {
     public static class MKRecursionExtensions
     {
-        public static void SetLayerRecursive(this GameObject _gameObject, int _layer, bool _recursivelyOnAllChildren = false)
+        public static void SetLayerRecursive(this GameObject _gameObject, int _layer)
         {
             _gameObject.layer = _layer;
 
-            if (_recursivelyOnAllChildren)
+            foreach (Transform child in _gameObject.transform)
             {
-                foreach (Transform child in _gameObject.transform)
-                {
-                    child.gameObject.SetLayerRecursive(_layer, true);
-                }
+                child.gameObject.SetLayerRecursive(_layer);
             }
         }
 
