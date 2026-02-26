@@ -1,11 +1,14 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Minikit
 {
     public class MKTagContainer : IEnumerable<MKTag>
     {
+        [HideInInspector] public UnityEvent OnTagsChanged = new();
+        
         private List<MKTag> tags = new();
 
 
@@ -76,15 +79,22 @@ namespace Minikit
             if (!tags.Contains(_tag))
             {
                 tags.Add(_tag);
+                OnTagsChanged.Invoke();
             }
         }
 
         public void AddTags(MKTagContainer _tagContainer)
         {
-            foreach (MKTag tag in _tagContainer)
+            AddTags(_tagContainer.GetTags());
+        }
+
+        public void AddTags(List<MKTag> _tags)
+        {
+            foreach (MKTag tag in _tags)
             {
                 AddTag(tag);
             }
+            OnTagsChanged.Invoke();
         }
 
         public void RemoveTag(MKTag _tag)
@@ -92,15 +102,22 @@ namespace Minikit
             if (tags.Contains(_tag))
             {
                 tags.Remove(_tag);
+                OnTagsChanged.Invoke();
             }
         }
 
         public void RemoveTags(MKTagContainer _tagContainer)
         {
-            foreach (MKTag tag in _tagContainer)
+            RemoveTags(_tagContainer.GetTags());
+        }
+
+        public void RemoveTags(List<MKTag> _tags)
+        {
+            foreach (MKTag tag in _tags)
             {
                 RemoveTag(tag);
             }
+            OnTagsChanged.Invoke();
         }
 
         public IEnumerator<MKTag> GetEnumerator()
