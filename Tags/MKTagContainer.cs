@@ -33,6 +33,11 @@ namespace Minikit
             return tags;
         }
 
+        public int NumTags()
+        {
+            return tags.Count;
+        }
+
         public bool HasTag(MKTag _tag)
         {
             return tags.Contains(_tag);
