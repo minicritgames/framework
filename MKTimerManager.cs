@@ -36,6 +36,36 @@ namespace Minikit
         }
     }
 
+    public class MKTimerHandle_Recurring
+    {
+        private Action action;
+        private float interval;
+        private float nextFireTime;
+        public bool cancelRequested { get; private set; } = false;
+        public bool shouldFire => !cancelRequested && Time.time >= nextFireTime;
+
+
+        public MKTimerHandle_Recurring(float _interval, Action _action)
+        {
+            action = _action;
+            interval = _interval;
+            nextFireTime = Time.time + interval;
+        }
+
+
+        public void Cancel()
+        {
+            cancelRequested = true;
+        }
+
+        public void Fire()
+        {
+            action?.Invoke();
+            // Schedule from now rather than from the prior fire time so a long frame doesn't backlog catch-up fires.
+            nextFireTime = Time.time + interval;
+        }
+    }
+
     public class MKTimerHandle_Coroutine
     {
         private Coroutine coroutine;
@@ -68,6 +98,7 @@ namespace Minikit
         [HideInInspector] public UnityEvent OnLateUpdate = new();
         
         protected List<MKTimerHandle_Tick> timerHandles = new();
+        protected List<MKTimerHandle_Recurring> recurringHandles = new();
 
         protected static MKTimerManager __instance;
         public static MKTimerManager instance
@@ -107,7 +138,21 @@ namespace Minikit
                     continue;
                 }
             }
-            
+
+            foreach (MKTimerHandle_Recurring recurringHandle in recurringHandles.ToArray())
+            {
+                if (recurringHandle.cancelRequested)
+                {
+                    recurringHandles.Remove(recurringHandle);
+                    continue;
+                }
+
+                if (recurringHandle.shouldFire)
+                {
+                    recurringHandle.Fire();
+                }
+            }
+
             OnUpdate?.Invoke();
         }
 
@@ -127,6 +172,13 @@ namespace Minikit
             MKTimerHandle_Tick timerHandle = new MKTimerHandle_Tick(_delay, _action);
             timerHandles.Add(timerHandle);
             return timerHandle;
+        }
+
+        public MKTimerHandle_Recurring NewTimer_Recurring(float _interval, Action _action)
+        {
+            MKTimerHandle_Recurring recurringHandle = new MKTimerHandle_Recurring(_interval, _action);
+            recurringHandles.Add(recurringHandle);
+            return recurringHandle;
         }
 
         public MKTimerHandle_Coroutine NewTimer_Coroutine(float _delay, Action _action)
