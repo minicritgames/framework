@@ -21,5 +21,11 @@ namespace Minikit
             Gizmos.DrawLine(_position - (Vector3.up * _halfSize), _position + (Vector3.up * _halfSize));
             Gizmos.DrawLine(_position - (Vector3.forward * _halfSize), _position + (Vector3.forward * _halfSize));
         }
+
+        public static Color WithAlpha(Color _color, float _alpha)
+        {
+            _color.a = _alpha;
+            return _color;
+        }
     }
 } // Minikit namespace
