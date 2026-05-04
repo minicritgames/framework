@@ -14,5 +14,12 @@ namespace Minikit
             Gizmos.DrawRay(_position + _direction, right * _arrowHeadLength);
             Gizmos.DrawRay(_position + _direction, left * _arrowHeadLength);
         }
+
+        public static void DrawCross(Vector3 _position, float _halfSize = 0.5f)
+        {
+            Gizmos.DrawLine(_position - (Vector3.right * _halfSize), _position + (Vector3.right * _halfSize));
+            Gizmos.DrawLine(_position - (Vector3.up * _halfSize), _position + (Vector3.up * _halfSize));
+            Gizmos.DrawLine(_position - (Vector3.forward * _halfSize), _position + (Vector3.forward * _halfSize));
+        }
     }
 } // Minikit namespace
