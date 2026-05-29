@@ -14,5 +14,19 @@ namespace Minikit
             Gizmos.DrawRay(_position + _direction, right * _arrowHeadLength);
             Gizmos.DrawRay(_position + _direction, left * _arrowHeadLength);
         }
+
+        public static void DrawCross(Vector3 _position, float _size)
+        {
+            float half = _size * 0.5f;
+            Gizmos.DrawLine(_position - (Vector3.right * half), _position + (Vector3.right * half));
+            Gizmos.DrawLine(_position - (Vector3.up * half), _position + (Vector3.up * half));
+            Gizmos.DrawLine(_position - (Vector3.forward * half), _position + (Vector3.forward * half));
+        }
+
+        public static Color WithAlpha(Color _color, float _alpha)
+        {
+            _color.a = _alpha;
+            return _color;
+        }
     }
 } // Minikit namespace
