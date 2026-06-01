@@ -209,7 +209,7 @@ namespace Minikit
             {
                 for (int i = 0; i < _frames; i++)
                 {
-                    yield return new WaitForEndOfFrame();
+                    yield return null;
                 }
             }
 
