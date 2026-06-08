@@ -9,6 +9,11 @@ namespace Minikit
         {
             Gizmos.DrawRay(_position, _direction);
 
+            if (_direction.sqrMagnitude < 1e-6f)
+            {
+                return;
+            }
+
             Vector3 right = Quaternion.LookRotation(_direction) * Quaternion.Euler(0, 180 + _arrowHeadAngle, 0) * new Vector3(0, 0, 1);
             Vector3 left = Quaternion.LookRotation(_direction) * Quaternion.Euler(0, 180 - _arrowHeadAngle, 0) * new Vector3(0, 0, 1);
             Gizmos.DrawRay(_position + _direction, right * _arrowHeadLength);
