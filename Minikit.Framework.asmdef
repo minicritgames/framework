@@ -1,7 +1,11 @@
 {
     "name": "Minikit.Framework",
     "rootNamespace": "Minikit",
-    "references": [],
+    "references": [
+        "Unity.Addressables",
+        "Unity.Addressables.Editor",
+        "Unity.ResourceManager"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
