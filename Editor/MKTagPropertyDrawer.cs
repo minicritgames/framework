@@ -15,7 +15,7 @@ namespace Minikit.Editor
 
             position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
 
-            List<string> nativeTags = MKTagReflector.GetNativelyDefinedTags();
+            List<string> nativeTags = new(MKTagReflector.GetNativelyDefinedTags());
             if (nativeTags.Count > 0)
             {
                 nativeTags.Insert(0, "Invalid");
@@ -40,8 +40,6 @@ namespace Minikit.Editor
 
                 if (string.IsNullOrEmpty(keyProperty.stringValue))
                 {
-                    // TODO: `option` is offset by -1 for each tag property drawer being rendered before the Popup call
-
                     // Display a dropdown of natively defined tags on the next line
                     int option = EditorGUI.Popup(keyFieldRect, 0, nativeTags.ToArray());
                     if (option > nativeTags.Count)
