@@ -81,7 +81,10 @@ namespace Minikit
         
         public void Cancel()
         {
-            MKTimerManager.instance.StopCoroutine(coroutine);
+            if (MKTimerManager.instanceExists)
+            {
+                MKTimerManager.instance.StopCoroutine(coroutine);
+            }
         }
 
         public void Finish()
@@ -101,21 +104,41 @@ namespace Minikit
         protected List<MKTimerHandle_Recurring> recurringHandles = new();
 
         protected static MKTimerManager __instance;
+        private static bool isShuttingDown;
+
+        public static bool instanceExists => __instance;
+
         public static MKTimerManager instance
         {
             get
             {
-                if (!__instance)
+                if (!__instance
+                    && !isShuttingDown)
                 {
                     GameObject timerManagerGO = new("TimerManager");
                     __instance = timerManagerGO.AddComponent<MKTimerManager>();
                 }
-                
-                return __instance;
+
+                return __instance ? __instance : null;
             }
         }
 
-        
+
+        // Statics carry over between play sessions when domain reload is disabled.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStatics()
+        {
+            __instance = null;
+            isShuttingDown = false;
+            Application.quitting -= Application_quitting;
+            Application.quitting += Application_quitting;
+        }
+
+        private static void Application_quitting()
+        {
+            isShuttingDown = true;
+        }
+
         protected virtual void Awake()
         {
             DontDestroyOnLoad(gameObject);
