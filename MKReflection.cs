@@ -30,5 +30,40 @@ namespace Minikit
 
             return dependentAssemblies;
         }
+
+        public static List<Type> GetConcreteSubclassesOf(Type _baseType)
+        {
+            List<Type> subclasses = new();
+#if UNITY_EDITOR
+            foreach (Type type in UnityEditor.TypeCache.GetTypesDerivedFrom(_baseType))
+            {
+                if (!type.IsAbstract)
+                {
+                    subclasses.Add(type);
+                }
+            }
+#else
+            // A subclass can only compile against a direct reference to its base's assembly, so other assemblies can't hold one
+            foreach (Assembly assembly in GetAssembliesDependingOn(_baseType.Assembly))
+            {
+                foreach (Type type in assembly.GetTypes())
+                {
+                    if (!type.IsAbstract
+                        && type.IsSubclassOf(_baseType))
+                    {
+                        subclasses.Add(type);
+                    }
+                }
+            }
+#endif
+
+            subclasses.Sort((_a, _b) => string.CompareOrdinal(_a.FullName, _b.FullName));
+            return subclasses;
+        }
+
+        public static List<Type> GetConcreteSubclassesOf<T>()
+        {
+            return GetConcreteSubclassesOf(typeof(T));
+        }
     }
 } // Minikit namespace
