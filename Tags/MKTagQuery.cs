@@ -1,88 +1,84 @@
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace Minikit
 {
-    [System.Serializable]
+    [Serializable]
     public enum MKTagQueryCondition
     {
-        Any, // At least 1 tag in the query exists in the list of tags being tested against
-        All, // All of the tags in the query exist in the list of tags being tested against
-        None // None of the tags in the query exist in the list of tags being tested against
+        Any, // At least 1 tag in the query is matched by the tags being tested
+        All, // All of the tags in the query are matched by the tags being tested
+        None // None of the tags in the query are matched by the tags being tested
     }
 
-    [System.Serializable]
+    /// <summary>
+    /// Tests a set of tags against a condition. Matching is hierarchical: a query for "A.B" is matched by a tested tag "A.B.C".
+    /// An empty query always passes.
+    /// </summary>
+    [Serializable]
     public class MKTagQuery
     {
         [SerializeField] private MKTagQueryCondition condition = MKTagQueryCondition.Any;
-        [SerializeField] private List<MKTag> tagList = new();
+        [SerializeField] private MKTagContainer tags = new();
 
 
-        public MKTagQuery(MKTagQueryCondition _condition, List<MKTag> _tagList)
+        public MKTagQuery(MKTagQueryCondition _condition)
         {
             condition = _condition;
-            tagList = _tagList;
+        }
+
+        public MKTagQuery(MKTagQueryCondition _condition, List<MKTag> _tags)
+        {
+            condition = _condition;
+            tags = new(_tags);
         }
 
 
         public bool Test(MKTag _tag)
         {
-            return Test(new List<MKTag>() { _tag });
-        }
-
-        public bool Test(List<MKTag> _tagList)
-        {
-            if (tagList == null
-                || tagList.Count == 0)
+            if (tags.isEmpty)
             {
                 return true;
             }
 
-            switch (condition)
+            return condition switch
             {
-                case MKTagQueryCondition.Any:
-                    if (_tagList == null)
-                    {
-                        return false;
-                    }
-                    foreach (MKTag tag in tagList)
-                    {
-                        if (_tagList.Contains(tag))
-                        {
-                            return true;
-                        }
-                    }
-                    return false;
-                case MKTagQueryCondition.All:
-                    if (_tagList == null)
-                    {
-                        return false;
-                    }
-                    foreach (MKTag tag in tagList)
-                    {
-                        if (!_tagList.Contains(tag))
-                        {
-                            return false;
-                        }
-                    }
-                    return true;
-                case MKTagQueryCondition.None:
-                    if (_tagList == null)
-                    {
-                        return true;
-                    }
-                    foreach (MKTag tag in tagList)
-                    {
-                        if (_tagList.Contains(tag))
-                        {
-                            return false;
-                        }
-                    }
-                    return true;
+                MKTagQueryCondition.Any => _tag is not null && _tag.MatchesAny(tags),
+                MKTagQueryCondition.All => _tag is not null && MatchesAll(_tag),
+                MKTagQueryCondition.None => _tag is null || !_tag.MatchesAny(tags),
+                _ => false
+            };
+        }
+
+        public bool Test(IEnumerable<MKTag> _tags)
+        {
+            if (tags.isEmpty)
+            {
+                return true;
             }
 
-            return false;
+            IMKTagCollection collection = _tags as IMKTagCollection ?? new MKTagContainer(_tags);
+            return condition switch
+            {
+                MKTagQueryCondition.Any => collection.HasAny(tags),
+                MKTagQueryCondition.All => collection.HasAll(tags),
+                MKTagQueryCondition.None => !collection.HasAny(tags),
+                _ => false
+            };
+        }
+
+        private bool MatchesAll(MKTag _tag)
+        {
+            foreach (MKTag tag in tags)
+            {
+                if (!_tag.MatchesTag(tag))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
     }
 } // Minikit namespace

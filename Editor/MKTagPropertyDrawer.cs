@@ -1,68 +1,75 @@
-using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
-using Minikit.Internal;
 
 namespace Minikit.Editor
 {
     [CustomPropertyDrawer(typeof(MKTag))]
     public class MKTagPropertyDrawer : PropertyDrawer
     {
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        private static readonly Color unregisteredColor = new(1f, 0.55f, 0.45f);
+
+
+        public override void OnGUI(Rect _position, SerializedProperty _property, GUIContent _label)
         {
-            label.text += " (Tag)";
-            EditorGUI.BeginProperty(position, label, property);
+            SerializedProperty keyProperty = _property.FindPropertyRelative("key");
 
-            position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
+            EditorGUI.BeginProperty(_position, _label, _property);
+            Rect buttonRect = EditorGUI.PrefixLabel(_position, _label);
 
-            List<string> nativeTags = new(MKTagReflector.GetNativelyDefinedTags());
-            if (nativeTags.Count > 0)
+            string key = keyProperty.stringValue;
+            bool mixed = keyProperty.hasMultipleDifferentValues;
+            bool unregistered = !mixed
+                && !string.IsNullOrEmpty(key)
+                && !MKTagRegistry.IsRegistered(key);
+
+            string text = mixed ? "—" : string.IsNullOrEmpty(key) ? "None" : key;
+            if (unregistered)
             {
-                nativeTags.Insert(0, "Invalid");
+                text += " (unregistered)";
             }
-            else
+
+            Color previousColor = GUI.backgroundColor;
+            if (unregistered)
             {
-                nativeTags.Insert(0, "Native Tags Not Found");
+                GUI.backgroundColor = unregisteredColor;
             }
 
-            float padding = 5f;
-            float clearButtonWidth = 50f;
-            Rect clearRect = new Rect(position.x, position.y, clearButtonWidth, position.height);
-            Rect keyFieldRect = new Rect(position.x + clearButtonWidth + padding, position.y, position.width - clearButtonWidth - padding, position.height);
+            bool clicked = EditorGUI.DropdownButton(buttonRect, new GUIContent(text, text), FocusType.Keyboard);
+            GUI.backgroundColor = previousColor;
 
-            if (GUI.Button(clearRect, "Clear"))
+            if (clicked)
             {
-                property.FindPropertyRelative("key").stringValue = "";
-            }
-            else
-            {
-                SerializedProperty keyProperty = property.FindPropertyRelative("key");
-
-                if (string.IsNullOrEmpty(keyProperty.stringValue))
-                {
-                    // Display a dropdown of natively defined tags on the next line
-                    int option = EditorGUI.Popup(keyFieldRect, 0, nativeTags.ToArray());
-                    if (option > nativeTags.Count)
-                    {
-                        option = nativeTags.Count;
-                    }
-                    else if (option < 0)
-                    {
-                        option = 0;
-                    }
-
-                    if (option != 0)
-                    {
-                        property.FindPropertyRelative("key").stringValue = nativeTags[option];
-                    }
-                }
-                else
-                {
-                    EditorGUI.PropertyField(keyFieldRect, keyProperty, GUIContent.none);
-                }
+                SerializedObject serializedObject = _property.serializedObject;
+                string path = _property.propertyPath;
+                MKTagDropdown.Show(buttonRect, mixed ? null : new[] { key }, false, _key => SetKey(serializedObject, path, _key));
             }
 
             EditorGUI.EndProperty();
+        }
+
+        public override float GetPropertyHeight(SerializedProperty _property, GUIContent _label)
+        {
+            return EditorGUIUtility.singleLineHeight;
+        }
+
+        private static void SetKey(SerializedObject _serializedObject, string _path, string _key)
+        {
+            if (_serializedObject == null
+                || _serializedObject.targetObject == null)
+            {
+                return;
+            }
+
+            _serializedObject.Update();
+            SerializedProperty keyProperty = _serializedObject.FindProperty(_path)?.FindPropertyRelative("key");
+            if (keyProperty == null)
+            {
+                return;
+            }
+
+            keyProperty.stringValue = _key;
+            _serializedObject.ApplyModifiedProperties();
+            UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
         }
     }
 } // Minikit.Editor namespace

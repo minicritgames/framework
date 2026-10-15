@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,124 +6,146 @@ using UnityEngine.Events;
 
 namespace Minikit
 {
-    public class MKTagContainer : IEnumerable<MKTag>
+    /// <summary>
+    /// A serializable set of tags with hierarchical queries: a container holding "A.B.C" also answers HasTag("A.B") and HasTag("A").
+    /// Use <see cref="MKTagCountContainer"/> instead when several sources may grant the same tag at runtime.
+    /// </summary>
+    [Serializable]
+    public class MKTagContainer : IMKTagCollection, ISerializationCallbackReceiver
     {
-        [HideInInspector] public UnityEvent OnTagsChanged = new();
-        
-        private List<MKTag> tags = new();
+        public UnityEvent OnTagsChanged => onTagsChanged ??= new();
+
+        public int count => tags.Count;
+        public bool isEmpty => tags.Count == 0;
+
+        [SerializeField] private List<MKTag> tags = new();
+
+        [NonSerialized] private UnityEvent onTagsChanged;
+        [NonSerialized] private HashSet<MKTag> implicitTags;
 
 
         public MKTagContainer()
         {
-
         }
 
         public MKTagContainer(MKTag _tag)
         {
-            tags.Add(_tag);
+            AddTagSilently(_tag);
         }
 
-        public MKTagContainer(List<MKTag> _tags)
+        public MKTagContainer(IEnumerable<MKTag> _tags)
         {
-            tags.AddRange(_tags);
+            if (_tags == null)
+            {
+                return;
+            }
+
+            foreach (MKTag tag in _tags)
+            {
+                AddTagSilently(tag);
+            }
         }
 
 
-        public List<MKTag> GetTags()
+        public IReadOnlyList<MKTag> GetTags()
         {
             return tags;
         }
 
-        public int NumTags()
-        {
-            return tags.Count;
-        }
-
         public bool HasTag(MKTag _tag)
         {
-            return tags.Contains(_tag);
+            return _tag is not null
+                && _tag.isValid
+                && GetImplicitTags().Contains(_tag);
         }
 
-        public bool HasAnyTags(MKTagContainer _tagContainer)
+        public bool HasTagExact(MKTag _tag)
         {
-            foreach (MKTag tag in _tagContainer.GetTags())
-            {
-                if (HasTag(tag))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return _tag is not null
+                && _tag.isValid
+                && tags.Contains(_tag);
         }
 
-        public bool HasAllTags(MKTagContainer _tagContainer)
+        public bool AddTag(MKTag _tag)
         {
-            foreach (MKTag tag in _tagContainer.GetTags())
+            if (!AddTagSilently(_tag))
             {
-                if (!HasTag(tag))
-                {
-                    return false;
-                }
+                return false;
             }
 
+            onTagsChanged?.Invoke();
             return true;
         }
 
-        public bool IsEmpty()
+        /// <summary> Enables collection initializers: <c>new MKTagContainer { tagA, tagB }</c>. Prefer <see cref="AddTag"/> elsewhere. </summary>
+        public void Add(MKTag _tag)
         {
-            return tags.Count == 0;
+            AddTag(_tag);
         }
 
-        public int Count()
+        public bool AddTags(IEnumerable<MKTag> _tags)
         {
-            return tags.Count;
-        }
-
-        public void AddTag(MKTag _tag)
-        {
-            if (!tags.Contains(_tag))
+            if (_tags == null)
             {
-                tags.Add(_tag);
-                OnTagsChanged.Invoke();
+                return false;
             }
-        }
 
-        public void AddTags(MKTagContainer _tagContainer)
-        {
-            AddTags(_tagContainer.GetTags());
-        }
-
-        public void AddTags(List<MKTag> _tags)
-        {
+            bool changed = false;
             foreach (MKTag tag in _tags)
             {
-                AddTag(tag);
+                changed |= AddTagSilently(tag);
             }
-            OnTagsChanged.Invoke();
-        }
 
-        public void RemoveTag(MKTag _tag)
-        {
-            if (tags.Contains(_tag))
+            if (changed)
             {
-                tags.Remove(_tag);
-                OnTagsChanged.Invoke();
+                onTagsChanged?.Invoke();
             }
+
+            return changed;
         }
 
-        public void RemoveTags(MKTagContainer _tagContainer)
+        public bool RemoveTag(MKTag _tag)
         {
-            RemoveTags(_tagContainer.GetTags());
+            if (!RemoveTagSilently(_tag))
+            {
+                return false;
+            }
+
+            onTagsChanged?.Invoke();
+            return true;
         }
 
-        public void RemoveTags(List<MKTag> _tags)
+        public bool RemoveTags(IEnumerable<MKTag> _tags)
         {
+            if (_tags == null)
+            {
+                return false;
+            }
+
+            bool changed = false;
             foreach (MKTag tag in _tags)
             {
-                RemoveTag(tag);
+                changed |= RemoveTagSilently(tag);
             }
-            OnTagsChanged.Invoke();
+
+            if (changed)
+            {
+                onTagsChanged?.Invoke();
+            }
+
+            return changed;
+        }
+
+        public void Clear()
+        {
+            if (tags.Count == 0)
+            {
+                return;
+            }
+
+            tags.Clear();
+            implicitTags = null;
+            onTagsChanged?.Invoke();
         }
 
         public IEnumerator<MKTag> GetEnumerator()
@@ -134,5 +157,65 @@ namespace Minikit
         {
             return GetEnumerator();
         }
+
+        public override string ToString()
+        {
+            return string.Join(", ", tags);
+        }
+
+        public void OnBeforeSerialize()
+        {
+        }
+
+        public void OnAfterDeserialize()
+        {
+            implicitTags = null;
+        }
+
+        private bool AddTagSilently(MKTag _tag)
+        {
+            if (_tag is null
+                || !_tag.isValid
+                || tags.Contains(_tag))
+            {
+                return false;
+            }
+
+            tags.Add(MKTag.Get(_tag.name));
+            implicitTags = null;
+            return true;
+        }
+
+        private bool RemoveTagSilently(MKTag _tag)
+        {
+            if (_tag is null
+                || !tags.Remove(_tag))
+            {
+                return false;
+            }
+
+            implicitTags = null;
+            return true;
+        }
+
+        private HashSet<MKTag> GetImplicitTags()
+        {
+            if (implicitTags == null)
+            {
+                implicitTags = new();
+                foreach (MKTag tag in tags)
+                {
+                    foreach (MKTag tagOrParent in tag.SelfAndParents())
+                    {
+                        if (!implicitTags.Add(tagOrParent))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return implicitTags;
+        }
     }
-} // Minikit namespace 
+} // Minikit namespace
