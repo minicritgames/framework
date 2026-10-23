@@ -15,10 +15,15 @@ namespace Minikit
     {
         public static string GetAddressableKeyFromPrefab(GameObject _prefab)
         {
+            return GetAddressableKey(_prefab);
+        }
+
+        public static string GetAddressableKey(UnityEngine.Object _asset)
+        {
 #if UNITY_EDITOR
             string addressableKey = string.Empty;
             
-            if (AssetDatabase.GetAssetPath(_prefab) is string assetPath
+            if (AssetDatabase.GetAssetPath(_asset) is string assetPath
                 && AssetDatabase.AssetPathToGUID(assetPath) is string guid
                 && AddressableAssetSettingsDefaultObject.Settings is AddressableAssetSettings settings
                 && settings.FindAssetEntry(guid) is AddressableAssetEntry entry)
@@ -28,7 +33,7 @@ namespace Minikit
             
             return addressableKey;
 #else
-            Debug.LogError("You cannot get addressable keys from a prefab outside of the editor");
+            Debug.LogError("You cannot get addressable keys outside of the editor");
             return string.Empty;
 #endif // UNITY_EDITOR
         }
