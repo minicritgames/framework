@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -11,6 +12,8 @@ namespace Minikit
 
     public class MKObjectPool<T> : IMKObjectPool where T : Component
     {
+        private static readonly ProfilerMarker createMarker = new("MK.Pools.Create");
+
         private readonly T prefab;
         private readonly Transform idleRoot;
         private readonly int maxIdle;
@@ -98,6 +101,8 @@ namespace Minikit
 
         private MKPooledObject Create()
         {
+            using ProfilerMarker.AutoScope createScope = createMarker.Auto();
+
             GameObject instanceGO = Object.Instantiate(prefab.gameObject, idleRoot);
             instanceGO.SetActive(false);
 
