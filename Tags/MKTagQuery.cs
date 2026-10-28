@@ -35,6 +35,16 @@ namespace Minikit
         }
 
 
+        public MKTagQueryCondition GetCondition()
+        {
+            return condition;
+        }
+
+        public IReadOnlyList<MKTag> GetTags()
+        {
+            return tags.GetTags();
+        }
+
         public bool Test(MKTag _tag)
         {
             if (tags.isEmpty)
