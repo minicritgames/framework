@@ -38,6 +38,26 @@ namespace Minikit
 #endif // UNITY_EDITOR
         }
 
+        public static string GetOrAddAddressableKey(UnityEngine.Object _asset, string _address)
+        {
+#if UNITY_EDITOR
+            string addressableKey = GetAddressableKey(_asset);
+            if (!string.IsNullOrEmpty(addressableKey)
+                || AddressableAssetSettingsDefaultObject.Settings is not AddressableAssetSettings settings)
+            {
+                return addressableKey;
+            }
+
+            AddressableAssetEntry entry = settings.CreateOrMoveEntry(AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(_asset)), settings.DefaultGroup);
+            entry.address = _address;
+            settings.SetDirty(AddressableAssetSettings.ModificationEvent.EntryMoved, entry, true);
+            return entry.address;
+#else
+            Debug.LogError("You cannot add addressable entries outside of the editor");
+            return string.Empty;
+#endif // UNITY_EDITOR
+        }
+
         public static T LoadAssetSync<T>(string _addressableKey)
         {
             AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(_addressableKey);
