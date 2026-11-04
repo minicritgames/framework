@@ -1,8 +1,11 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceLocations;
 #if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.AddressableAssets;
@@ -84,6 +87,24 @@ namespace Minikit
             return handle.Result;
         }
         
+        public static IEnumerator DoLoadAssetIfExists<T>(string _addressableKey, Action<T> _onLoaded)
+        {
+            AsyncOperationHandle<IList<IResourceLocation>> locations = Addressables.LoadResourceLocationsAsync(_addressableKey, typeof(T));
+            yield return locations;
+            bool exists = locations.Status == AsyncOperationStatus.Succeeded
+                && locations.Result.Count > 0;
+            Addressables.Release(locations);
+            if (!exists)
+            {
+                _onLoaded?.Invoke(default);
+                yield break;
+            }
+
+            AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(_addressableKey);
+            yield return handle;
+            _onLoaded?.Invoke(handle.Status == AsyncOperationStatus.Succeeded ? handle.Result : default);
+        }
+
         public static void LoadAssetAsyncCallback<T>(string _addressableKey, Action<T> _callback = null)
         {
             AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(_addressableKey);
