@@ -105,6 +105,11 @@ namespace Minikit
             _onLoaded?.Invoke(handle.Status == AsyncOperationStatus.Succeeded ? handle.Result : default);
         }
 
+        public static void Release<T>(T _asset)
+        {
+            Addressables.Release(_asset);
+        }
+
         public static void LoadAssetAsyncCallback<T>(string _addressableKey, Action<T> _callback = null)
         {
             AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(_addressableKey);
