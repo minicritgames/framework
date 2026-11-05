@@ -13,6 +13,7 @@ namespace Minikit
         public string label { get; private set; }
         public double milliseconds { get; internal set; }
         public double longestSliceMilliseconds { get; internal set; }
+        public double longestFrameMilliseconds { get; internal set; }
         public int frames { get; internal set; }
         public bool failed { get; internal set; }
 
@@ -59,12 +60,14 @@ namespace Minikit
         public bool isFinished { get; private set; }
         public bool isCancelled { get; private set; }
         public double milliseconds { get; private set; }
+        public double longestFrameMilliseconds { get; private set; }
         public IReadOnlyList<MKLoadStep> steps => stepList;
 
         private readonly List<MKLoadStep> stepList = new();
         private readonly Stopwatch sliceStopwatch = new();
         private readonly Stopwatch stepStopwatch = new();
         private readonly Stopwatch totalStopwatch = new();
+        private readonly Stopwatch frameStopwatch = new();
         private int nextStepIndex;
         private Coroutine coroutine;
 
@@ -195,15 +198,19 @@ namespace Minikit
                     }
 
                     step.frames++;
+                    frameStopwatch.Restart();
                     yield return yielded == nextFrame ? null : yielded;
                     sliceStopwatch.Restart();
+                    RecordFrame(step);
                 }
                 EndStep(step);
 
                 if (sliceStopwatch.Elapsed.TotalMilliseconds >= frameBudgetMilliseconds)
                 {
+                    frameStopwatch.Restart();
                     yield return null;
                     sliceStopwatch.Restart();
+                    RecordFrame(null);
                 }
             }
             coroutine = null;
@@ -229,6 +236,17 @@ namespace Minikit
         private void RecordSlice(MKLoadStep _step)
         {
             _step.longestSliceMilliseconds = Math.Max(_step.longestSliceMilliseconds, sliceStopwatch.Elapsed.TotalMilliseconds);
+        }
+
+        private void RecordFrame(MKLoadStep _step)
+        {
+            // From giving up the frame to getting it back, so it holds whatever ran on the main thread in between
+            double frameMilliseconds = frameStopwatch.Elapsed.TotalMilliseconds;
+            longestFrameMilliseconds = Math.Max(longestFrameMilliseconds, frameMilliseconds);
+            if (_step != null)
+            {
+                _step.longestFrameMilliseconds = Math.Max(_step.longestFrameMilliseconds, frameMilliseconds);
+            }
         }
 
         private void DrainImmediately(MKLoadStep _step, IEnumerator _routine)
